@@ -35,6 +35,8 @@ void setup(void) {
   SerialDebug.print(F("Number of characters: "));
   SerialDebug.println(mfile.numberOfChars());
 
+  SerialDebug.println(F("Printing now a number of lines ... "));
+
   mfile.println("1st line, nothing fancy");
 
   mfile.println(F("2nd line with F macro"));
@@ -57,7 +59,10 @@ void setup(void) {
 
   mfile.println(F("Last line!"));
 
-  mfile.begin(); // Only necessary when we had a wrap around
+  SerialDebug.println(F("Showing some lines: "));
+  
+  SerialDebug.print(F("Number of lines: "));
+  SerialDebug.println(mfile.numberOfLines());
 
   SerialDebug.print(F("Number of lines: "));
   SerialDebug.println(mfile.numberOfLines());
