@@ -1,0 +1,6 @@
+V0.9.0
+  - first version that works
+
+V0.9.1
+  - now MemFile derives also from EEPROM_SPI_WE, so that we can use EEPROMwrite
+  

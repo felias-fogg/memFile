@@ -1,7 +1,6 @@
 // Test of the memFile library
 
 #include <Arduino.h>
-#include <EEPROM_SPI_WE.h>
 #include <memFile.h>
 
 #ifdef ARDUINO_ARCH_MEGAAVR
@@ -12,8 +11,7 @@ const uint16_t CS=10;
 #define SerialDebug Serial
 #endif
 
-EEPROM_SPI_WE mem = EEPROM_SPI_WE(CS);
-MemFile mfile = MemFile(&mem);
+MemFile mfile = MemFile(EEPROM_KBITS_4096, EEPROM_PAGE_SIZE_256, CS);
 
 
 void setup(void) {
@@ -25,14 +23,6 @@ void setup(void) {
   SerialDebug.begin(115200);
   delay(1000);
   SerialDebug.println(F("SimpleTest (memFile)"));
-
-  if (mem.init()) {
-    SerialDebug.println(F("EEPROM initialized"));
-  }
-
-  // important parameters
-  mem.setPageSize(EEPROM_PAGE_SIZE_256);
-  mem.setMemorySize(EEPROM_KBITS_4096);
 
   mfile.begin();
 

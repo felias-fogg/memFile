@@ -7,23 +7,25 @@
 #include <Arduino.h>
 #include <EEPROM_SPI_WE.h>
 
-class MemFile : public Print
+class MemFile : public EEPROM_SPI_WE, public Print
 {
  public:
- MemFile(EEPROM_SPI_WE * mem) : _mem{mem}, _start{0}, _size{0}   {}
+ MemFile(eeprom_size_t esize, eeprom_pageSize psize, uint16_t cs, uint16_t wp=999, uint32_t sc = 8000000) :
+  EEPROM_SPI_WE(cs, wp, sc), _psize{psize}, _size{esize}  {}
+     
   void begin(void);
   virtual size_t write(uint8_t);
 
   uint32_t numberOfLines(void);
   uint32_t numberOfChars(void);
-  char* getLine(uint32_t, char[], size_t);
+  char* getLine(long int, char[], size_t);
   void clear(void);
 
  private:
-  EEPROM_SPI_WE * _mem;
-  uint32_t _start;
-  uint32_t _next;
-  uint32_t _size;
+  long int _start;
+  long int _next;
+  eeprom_pageSize _psize;
+  eeprom_size_t _size;
 };
 
 #endif
