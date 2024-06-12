@@ -13,7 +13,7 @@ class MemFile : public EEPROM_SPI_WE, public Print
 {
  public:
  MemFile(eeprom_size_t esize, eeprom_pageSize psize, uint16_t cs, uint16_t wp=999, uint32_t sc = 8000000) :
-  EEPROM_SPI_WE(cs, wp, sc), _start{0}, _next{0}, _psize{psize}, _size{esize}, _bix{0} {}
+  EEPROM_SPI_WE(cs, wp, sc), _next{0}, _psize{psize}, _size{esize}, _bix{0} {}
      
   void begin(void);
   virtual size_t write(uint8_t);
@@ -24,7 +24,6 @@ class MemFile : public EEPROM_SPI_WE, public Print
   void clear(void);
 
  private:
-  long int _start;
   long int _next;
   eeprom_pageSize _psize;
   eeprom_size_t _size;

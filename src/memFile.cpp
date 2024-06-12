@@ -1,22 +1,31 @@
-// This is a library that supports to write to an EEPROM in a cyclic manner. 
-// One can write to the EEPROM in a file-like manner using all Print class methods.
+// This is a library that supports writing to an EEPROM in a cyclic manner. 
+// One can write to the EEPROM in a file-like manner using all Print class methods, since the class is
+// is a subclass of the Print class.
+//
+// The class will never store a zero as part of a string, since the zero is used as a marker.
+// Initially, a zero in the first memory cell signals that the memory is not completely
+// filled. The second zero byte is the place where the next string will be stored.
+// Once the first wrap-around has taken place, there will only be one zero byte, that
+// marks the start location as well as the location, where the next line will be stored.
 
 #include <memFile.h>
 
 void MemFile::begin(void) {
+  long int ix = 0;
   init();
   setPageSize(_psize);
   setMemorySize(_size);
-  // _size = EEPROM_KBITS_2; // just for debugging!
-  _start = 0;
+  //_size = EEPROM_KBITS_2; // just for debugging!
   _bix = 0;
-  while (read(_start) != 0 && _start < (long int)(_size)) _start++;
-  if (_start == (long int)(_size)) {  // no zero byte found -> initialize
+  while (read(ix) != 0 && ix < (long int)(_size)) ix++;
+  if (ix < (long int)(_size)) {
+    _next = ix + 1;
+    while (read(_next) != 0) _next = (_next + 1) % (long int)(_size);
+  }
+  if (ix == (long int)(_size) || (ix < _next && read(0) != 0)) {  // no zero byte found or too many zery bytes found -> initialize
     clear();
     return;
   }
-  _next = _start+1;
-  while (read(_next) != 0) _next = (_next + 1) % (long int)(_size);
 }
 
 size_t MemFile::write(uint8_t c) {
@@ -40,14 +49,13 @@ size_t MemFile::write(uint8_t c) {
 }
 
 void MemFile::clear(void) {
-  _start = 0;
+  EEPROM_SPI_WE::write(0, 0);
+  EEPROM_SPI_WE::write(1, 0);
   _next = 1;
-  EEPROM_SPI_WE::write(_start, 0);
-  EEPROM_SPI_WE::write(_next, 0);
 }
 
 uint32_t MemFile::numberOfChars(void) {
-  if (_start == _next || read(0) != 0) return (long int)(_size)-1;
+  if (_next == 0 || read(0) != 0) return (long int)(_size)-1;
   else return _next-1;
 }
 
@@ -58,8 +66,8 @@ uint32_t MemFile::numberOfLines(void) {
   long int ix;
   uint8_t ch;
 
-  if (_start == _next || read(0) != 0) ix = (_next + 1) % (long int)(_size);
-  else ix =  _start + 1;
+  if (_next == 0 || read(0) != 0) ix = (_next + 1) % (long int)(_size);
+  else ix =  1;
   ch = read(ix);
     
   while (ch != 0) {
@@ -84,8 +92,8 @@ char* MemFile::getLine(long int linenum, char line[], size_t len) {
   long int chcnt = 0;
   uint8_t ch;
 
-  if (_start == _next || read(0) != 0) ix = (_next + 1) % (long int)(_size);
-  else ix =  (_start + 1)  % (long int)(_size);
+  if (_next == 0 || read(0) != 0) ix = (_next + 1) % (long int)(_size);
+  else ix = 1;
   ch  = read(ix);
   
   line[0] = 0;
